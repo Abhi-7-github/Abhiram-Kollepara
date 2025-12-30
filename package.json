@@ -1,0 +1,30 @@
+{
+  "name": "abhiram-kollepara",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n server,client -c green,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "seed": "node server/scripts/seed.js",
+    "build:client": "npm run build --prefix client",
+    "start:server": "npm run start --prefix server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Abhi-7-github/Abhiram-Kollepara.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Abhi-7-github/Abhiram-Kollepara/issues"
+  },
+  "homepage": "https://github.com/Abhi-7-github/Abhiram-Kollepara#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
