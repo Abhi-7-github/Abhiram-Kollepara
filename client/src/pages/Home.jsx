@@ -7,8 +7,11 @@ import NeonCard from '../components/NeonCard';
 import Modal from '../components/Modal';
 import FloatingDockDemo from '../components/floating-dock-demo';
 import GoogleGeminiEffectDemo from '../components/google-gemini-effect-demo';
+import { IconArrowUpRight } from '@tabler/icons-react';
 import { api } from '../lib/api';
 import { variants } from '../animations/motion';
+import { Button as StatefulButton } from '@/components/ui/stateful-button';
+import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
 
 function Section({ id, title, children }) {
   return (
@@ -75,6 +78,37 @@ export default function Home() {
       window.setTimeout(() => setContactState({ status: 'idle', error: '' }), 2200);
     } catch (err) {
       setContactState({ status: 'error', error: err?.message || 'Failed to send message' });
+    }
+  };
+
+  const onSendMessage = async () => {
+    if (contactState.status === 'sending') return;
+    setContactState({ status: 'sending', error: '' });
+
+    try {
+      await api.sendContact(contact);
+      setContact({ name: '', email: '', message: '' });
+      setContactState({ status: 'sent', error: '' });
+      window.setTimeout(() => setContactState({ status: 'idle', error: '' }), 2200);
+    } catch (err) {
+      const message = err?.message || 'Failed to send message';
+      setContactState({ status: 'error', error: message });
+      throw new Error(message);
+    }
+  };
+
+  const getProjectPreviewImage = (project) => {
+    if (project?.imageUrl) return project.imageUrl;
+
+    const liveUrl = project?.liveUrl;
+    if (!liveUrl) return null;
+
+    try {
+      const url = new URL(liveUrl);
+      // Public screenshot service (no auth). If this becomes rate-limited, set imageUrl per project.
+      return `https://image.thum.io/get/width/1200/crop/650/noanimate/${url.toString()}`;
+    } catch {
+      return null;
     }
   };
 
@@ -162,33 +196,30 @@ export default function Home() {
 
             {skills.map((skill) => (
               <Reveal key={skill._id || skill.name}>
-                <NeonCard
-                  className={
-                    "group relative overflow-hidden transition-colors duration-300 hover:border-green-500/35 " +
-                    "before:pointer-events-none before:absolute before:inset-0 before:z-0 before:content-[''] " +
-                    "before:origin-left before:scale-x-0 before:bg-green-500/12 before:transition-transform before:duration-300 " +
-                    "group-hover:before:scale-x-100"
-                  }
-                >
-                  <div className="relative z-10 flex items-center gap-3">
-                    <img
-                      src={skill.logoUrl}
-                      alt={skill.name}
-                      loading="lazy"
-                      className="h-10 w-10 rounded-lg bg-black/60 p-1"
-                    />
-                    <div className="min-w-0">
-                      <div className="truncate font-mono text-sm text-green-100">{skill.name}</div>
+                <div className="group relative rounded-2xl p-[3px]">
+                  <div className="absolute inset-0 rounded-2xl bg-black" />
+                  <div className="absolute inset-0 rounded-2xl bg-green-500/20 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                  <div className="relative rounded-[calc(theme(borderRadius.2xl)-3px)] bg-black/40 p-5 transition duration-200 hover:bg-transparent">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={skill.logoUrl}
+                        alt={skill.name}
+                        loading="lazy"
+                        className="h-10 w-10 rounded-lg bg-black/60 p-1"
+                      />
+                      <div className="min-w-0">
+                        <div className="truncate font-mono text-sm text-green-100">{skill.name}</div>
+                      </div>
                     </div>
                   </div>
-                </NeonCard>
+                </div>
               </Reveal>
             ))}
           </m.div>
         </Section>
 
         <Section id="projects" title="projects://ops">
-          <div className="grid gap-4 md:grid-cols-2">
+          <BentoGrid>
             {projects.length === 0 ? (
               <Reveal>
                 <div className="rounded-2xl border border-green-500/10 bg-black/30 p-5 text-sm text-green-200/70">
@@ -197,32 +228,52 @@ export default function Home() {
               </Reveal>
             ) : null}
 
-            {projects.map((p) => (
+            {projects.map((p, i) => (
               <Reveal key={p._id || p.title}>
-                <NeonCard onClick={() => setSelectedProject(p)} className="group">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="font-mono text-base text-green-100">{p.title}</div>
-                      <p className="mt-2 text-sm text-green-200/70">{p.description}</p>
+                <BentoGridItem
+                  onClick={() => setSelectedProject(p)}
+                  title={
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="truncate">{p.title}</span>
+                      <IconArrowUpRight className="h-4 w-4 shrink-0 text-green-200/70" />
                     </div>
-                    <div className="shrink-0 rounded-full border border-green-500/20 px-2 py-1 text-xs text-green-200/80 group-hover:border-green-500/40">
-                      open
-                    </div>
-                  </div>
+                  }
+                  description={
+                    <div className="grid gap-3">
+                      <p className="line-clamp-3">{p.description}</p>
 
-                  {Array.isArray(p.techStack) && p.techStack.length ? (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {p.techStack.slice(0, 6).map((t) => (
-                        <span key={t} className="rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-200/80 ring-1 ring-green-500/10">
-                          {t}
-                        </span>
-                      ))}
+                      {Array.isArray(p.techStack) && p.techStack.length ? (
+                        <div className="flex flex-wrap gap-2">
+                          {p.techStack.slice(0, 6).map((t) => (
+                            <span
+                              key={t}
+                              className="rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-200/80 ring-1 ring-green-500/10"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </NeonCard>
+                  }
+                  header={
+                    getProjectPreviewImage(p) ? (
+                      <img
+                        src={getProjectPreviewImage(p)}
+                        alt={p.title}
+                        loading="lazy"
+                        className="h-28 w-full rounded-xl border border-green-500/10 object-cover"
+                      />
+                    ) : (
+                      <div className="h-28 w-full rounded-xl border border-green-500/10 bg-black/30" />
+                    )
+                  }
+                  icon={<span className="font-mono text-xs text-green-200/60">project://open</span>}
+                  className={i % 7 === 3 || i % 7 === 6 ? 'md:col-span-2' : ''}
+                />
               </Reveal>
             ))}
-          </div>
+          </BentoGrid>
 
           <Modal open={!!selectedProject} title={selectedProject?.title || 'Project'} onClose={() => setSelectedProject(null)}>
             {selectedProject ? (
@@ -319,13 +370,13 @@ export default function Home() {
               </label>
 
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <button
-                  type="submit"
+                <StatefulButton
+                  type="button"
                   disabled={contactState.status === 'sending'}
-                  className="focus-neon rounded-md bg-green-500/10 px-4 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={onSendMessage}
                 >
                   {contactState.status === 'sending' ? 'sending…' : 'send'}
-                </button>
+                </StatefulButton>
 
                 <div className="font-mono text-xs text-green-200/70">
                   {contactState.status === 'sent' ? 'status: delivered' : null}
