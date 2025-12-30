@@ -29,6 +29,17 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'portfolio-server',
+    health: '/api/health',
+    skills: '/api/skills',
+    projects: '/api/projects',
+    contact: '/api/contact'
+  });
+});
+
 app.use('/api/skills', skillsRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/contact', contactRouter);
