@@ -1,7 +1,10 @@
-const apiBase = import.meta.env.VITE_API_URL || '';
+const rawApiBase = import.meta.env.VITE_API_URL || '';
+const apiBase = rawApiBase.endsWith('/') ? rawApiBase.slice(0, -1) : rawApiBase;
+
+const normalizePath = (path) => (path?.startsWith('/') ? path : `/${path}`);
 
 async function request(path, options) {
-  const res = await fetch(`${apiBase}${path}`, {
+  const res = await fetch(`${apiBase}${normalizePath(path)}`, {
     headers: {
       'Content-Type': 'application/json',
       ...(options?.headers || {})

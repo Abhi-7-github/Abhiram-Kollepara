@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import { env } from './config/env.js';
+import { env, parseCorsOrigin } from './config/env.js';
 import { connectDb } from './config/db.js';
 import { skillsRouter } from './routes/skills.js';
 import { projectsRouter } from './routes/projects.js';
@@ -15,7 +15,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: env.corsOrigin,
+    origin: parseCorsOrigin(env.corsOrigin),
     credentials: false
   })
 );

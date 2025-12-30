@@ -14,3 +14,15 @@ export const env = {
   mongoUri: required('MONGODB_URI'),
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173'
 };
+
+export const parseCorsOrigin = (value) => {
+  if (!value) return 'http://localhost:5173';
+  if (value === '*') return '*';
+
+  const origins = value
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return origins.length <= 1 ? (origins[0] ?? 'http://localhost:5173') : origins;
+};
