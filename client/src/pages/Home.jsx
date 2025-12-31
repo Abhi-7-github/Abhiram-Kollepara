@@ -44,8 +44,10 @@ export default function Home() {
   useEffect(() => {
     let alive = true;
 
-    refreshContent().catch(() => {
+    refreshContent().catch((err) => {
       if (!alive) return;
+      // eslint-disable-next-line no-console
+      console.error('[home] Failed to load skills/projects', err);
       // keep UI functional even if DB is empty/unavailable
       setSkills([]);
       setProjects([]);

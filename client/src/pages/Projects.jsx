@@ -19,8 +19,10 @@ export default function Projects() {
         if (!alive) return;
         setProjects(res?.data ?? []);
       })
-      .catch(() => {
+      .catch((err) => {
         if (!alive) return;
+        // eslint-disable-next-line no-console
+        console.error('[projects] Failed to load projects', err);
         setProjects([]);
       });
 

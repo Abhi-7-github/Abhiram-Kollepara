@@ -13,6 +13,10 @@
    - Copy `server/.env.example` to `server/.env`
    - Update `MONGODB_URI` and `CORS_ORIGIN` if needed
 
+2. Client env (required when deployed separately):
+   - Copy `client/.env.example` to `client/.env` (local)
+   - Set `VITE_API_URL` to your backend base URL (no trailing slash), e.g. `https://your-backend.onrender.com`
+
 2. Install deps:
    - From repo root: `npm i`
    - From `client/`: `npm i`
@@ -33,6 +37,13 @@
 
 ## Notes
 - The client uses a Vite dev proxy for `/api` to `http://localhost:5002`.
+- In production, the dev proxy does not exist. If frontend and backend are on different domains, you must set `VITE_API_URL` on your frontend host.
+
+## Deployed troubleshooting (skills/projects empty)
+- Open DevTools → Network and check the request to `/api/skills`.
+   - If it’s going to your frontend domain: set `VITE_API_URL` on the frontend deployment.
+   - If it’s going to the backend but fails with CORS: set `CORS_ORIGIN` on the backend to your frontend URL.
+   - If it succeeds but returns an empty list: your production MongoDB is empty; seed it by running `node server/scripts/seed.js` locally with `MONGODB_URI` pointing to the production DB.
 - Motion variants live in `client/src/animations/motion.js`.
 
 ## Thunder Client (add skills)

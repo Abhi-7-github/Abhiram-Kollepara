@@ -1,6 +1,13 @@
 const rawApiBase = import.meta.env.VITE_API_URL || '';
 const apiBase = rawApiBase.endsWith('/') ? rawApiBase.slice(0, -1) : rawApiBase;
 
+if (!apiBase && import.meta.env.PROD) {
+  // In production, the Vite dev proxy is not active.
+  // If your frontend and backend are deployed separately, you must set VITE_API_URL.
+  // eslint-disable-next-line no-console
+  console.warn('[api] VITE_API_URL is not set. Requests will go to the frontend origin (e.g. /api/skills).');
+}
+
 const normalizePath = (path) => (path?.startsWith('/') ? path : `/${path}`);
 
 async function request(path, options) {
