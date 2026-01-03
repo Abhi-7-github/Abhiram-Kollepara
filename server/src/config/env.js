@@ -19,10 +19,29 @@ export const parseCorsOrigin = (value) => {
   if (!value) return 'http://localhost:5173';
   if (value === '*') return '*';
 
+  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const wildcardTokenToRegExp = (token) => {
+    // Support patterns like:
+    // - https://*.netlify.app
+    // - *.netlify.app (interpreted as host pattern, allowing http/https)
+    const hasScheme = token.includes('://');
+    const escaped = escapeRegExp(token).replace(/\\\*/g, '.*');
+    if (hasScheme) {
+      return new RegExp(`^${escaped}$`);
+    }
+
+    // Match full origin with scheme.
+    return new RegExp(`^https?:\\/\\/${escaped}$`);
+  };
+
   const origins = value
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  return origins.length <= 1 ? (origins[0] ?? 'http://localhost:5173') : origins;
+  if (origins.includes('*')) return '*';
+
+  const parsed = origins.map((origin) => (origin.includes('*') ? wildcardTokenToRegExp(origin) : origin));
+
+  return parsed.length <= 1 ? (parsed[0] ?? 'http://localhost:5173') : parsed;
 };
