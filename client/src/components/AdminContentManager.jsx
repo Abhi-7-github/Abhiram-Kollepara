@@ -11,8 +11,10 @@ function toTechStackArray(value) {
     .filter(Boolean);
 }
 
-export default function AdminContentManager({ skills, projects, onRefresh, forceShow = false }) {
+export default function AdminContentManager({ skills = [], projects = [], onRefresh, forceShow = false, view = 'all' }) {
   const isDev = import.meta.env.DEV;
+  const showSkills = view === 'all' || view === 'skills';
+  const showProjects = view === 'all' || view === 'projects';
   const [skillDraft, setSkillDraft] = useState({ name: '', logoUrl: '' });
   const [projectDraft, setProjectDraft] = useState({
     title: '',
@@ -40,8 +42,8 @@ export default function AdminContentManager({ skills, projects, onRefresh, force
   });
 
   const hasIds = useMemo(() => ({
-    skillIds: skills?.some((s) => s?._id),
-    projectIds: projects?.some((p) => p?._id)
+    skillIds: skills.some((s) => s?._id),
+    projectIds: projects.some((p) => p?._id)
   }), [skills, projects]);
 
   if (!isDev && !forceShow) return null;
@@ -179,7 +181,13 @@ export default function AdminContentManager({ skills, projects, onRefresh, force
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="font-mono text-sm text-green-200">content manager</div>
-            <div className="mt-1 text-xs text-green-200/60">Add / edit / delete skills and projects.</div>
+            <div className="mt-1 text-xs text-green-200/60">
+              {showSkills && showProjects
+                ? 'Add / edit / delete skills and projects.'
+                : showSkills
+                  ? 'Add / edit / delete skills.'
+                  : 'Add / edit / delete projects.'}
+            </div>
           </div>
 
           <button
@@ -198,331 +206,339 @@ export default function AdminContentManager({ skills, projects, onRefresh, force
 
         <div className="mt-6 grid gap-6">
           <div className="grid gap-6 lg:grid-cols-2">
-            <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="font-mono text-xs text-green-200/80">skills://add</div>
-                {!hasIds.skillIds ? (
-                  <div className="text-[11px] text-green-200/50">needs MongoDB _id for edit/del</div>
-                ) : null}
-              </div>
-
-              <form onSubmit={submitSkill} className="grid gap-3">
-                <label className="grid gap-1">
-                  <span className="text-xs text-green-200/70">name</span>
-                  <input
-                    value={skillDraft.name}
-                    onChange={(e) => setSkillDraft((s) => ({ ...s, name: e.target.value }))}
-                    className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                    placeholder="React"
-                    required
-                  />
-                </label>
-
-                <label className="grid gap-1">
-                  <span className="text-xs text-green-200/70">logoUrl</span>
-                  <input
-                    value={skillDraft.logoUrl}
-                    onChange={(e) => setSkillDraft((s) => ({ ...s, logoUrl: e.target.value }))}
-                    className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                    placeholder="https://..."
-                    required
-                  />
-                </label>
-
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="focus-neon mt-1 w-fit rounded-md bg-green-500/10 px-4 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  add skill
-                </button>
-              </form>
-            </section>
-
-            <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="font-mono text-xs text-green-200/80">projects://add</div>
-                {!hasIds.projectIds ? (
-                  <div className="text-[11px] text-green-200/50">needs MongoDB _id for edit/del</div>
-                ) : null}
-              </div>
-
-              <form onSubmit={submitProject} className="grid gap-3">
-                <label className="grid gap-1">
-                  <span className="text-xs text-green-200/70">title</span>
-                  <input
-                    value={projectDraft.title}
-                    onChange={(e) => setProjectDraft((p) => ({ ...p, title: e.target.value }))}
-                    className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                    placeholder="My Project"
-                    required
-                  />
-                </label>
-
-                <label className="grid gap-1">
-                  <span className="text-xs text-green-200/70">description</span>
-                  <textarea
-                    value={projectDraft.description}
-                    onChange={(e) => setProjectDraft((p) => ({ ...p, description: e.target.value }))}
-                    className="focus-neon min-h-24 rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                    placeholder="What it does…"
-                    required
-                  />
-                </label>
-
-                <label className="grid gap-1">
-                  <span className="text-xs text-green-200/70">techStack (comma separated)</span>
-                  <input
-                    value={projectDraft.techStack}
-                    onChange={(e) => setProjectDraft((p) => ({ ...p, techStack: e.target.value }))}
-                    className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                    placeholder="React, Node.js, MongoDB"
-                  />
-                </label>
-
-                <div className="grid gap-3 md:grid-cols-2">
-                  <label className="grid gap-1">
-                    <span className="text-xs text-green-200/70">imageUrl</span>
-                    <input
-                      value={projectDraft.imageUrl}
-                      onChange={(e) => setProjectDraft((p) => ({ ...p, imageUrl: e.target.value }))}
-                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                      placeholder="https://..."
-                    />
-                  </label>
-                  <label className="grid gap-1">
-                    <span className="text-xs text-green-200/70">githubUrl</span>
-                    <input
-                      value={projectDraft.githubUrl}
-                      onChange={(e) => setProjectDraft((p) => ({ ...p, githubUrl: e.target.value }))}
-                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                      placeholder="https://github.com/..."
-                    />
-                  </label>
-                  <label className="grid gap-1 md:col-span-2">
-                    <span className="text-xs text-green-200/70">liveUrl</span>
-                    <input
-                      value={projectDraft.liveUrl}
-                      onChange={(e) => setProjectDraft((p) => ({ ...p, liveUrl: e.target.value }))}
-                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-                      placeholder="https://..."
-                    />
-                  </label>
+            {showSkills ? (
+              <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="font-mono text-xs text-green-200/80">skills://add</div>
+                  {!hasIds.skillIds ? (
+                    <div className="text-[11px] text-green-200/50">needs MongoDB _id for edit/del</div>
+                  ) : null}
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="focus-neon mt-1 w-fit rounded-md bg-green-500/10 px-4 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  add project
-                </button>
-              </form>
-            </section>
+                <form onSubmit={submitSkill} className="grid gap-3">
+                  <label className="grid gap-1">
+                    <span className="text-xs text-green-200/70">name</span>
+                    <input
+                      value={skillDraft.name}
+                      onChange={(e) => setSkillDraft((s) => ({ ...s, name: e.target.value }))}
+                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                      placeholder="React"
+                      required
+                    />
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-xs text-green-200/70">logoUrl</span>
+                    <input
+                      value={skillDraft.logoUrl}
+                      onChange={(e) => setSkillDraft((s) => ({ ...s, logoUrl: e.target.value }))}
+                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                      placeholder="https://..."
+                      required
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="focus-neon mt-1 w-fit rounded-md bg-green-500/10 px-4 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    add skill
+                  </button>
+                </form>
+              </section>
+            ) : null}
+
+            {showProjects ? (
+              <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="font-mono text-xs text-green-200/80">projects://add</div>
+                  {!hasIds.projectIds ? (
+                    <div className="text-[11px] text-green-200/50">needs MongoDB _id for edit/del</div>
+                  ) : null}
+                </div>
+
+                <form onSubmit={submitProject} className="grid gap-3">
+                  <label className="grid gap-1">
+                    <span className="text-xs text-green-200/70">title</span>
+                    <input
+                      value={projectDraft.title}
+                      onChange={(e) => setProjectDraft((p) => ({ ...p, title: e.target.value }))}
+                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                      placeholder="My Project"
+                      required
+                    />
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-xs text-green-200/70">description</span>
+                    <textarea
+                      value={projectDraft.description}
+                      onChange={(e) => setProjectDraft((p) => ({ ...p, description: e.target.value }))}
+                      className="focus-neon min-h-24 rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                      placeholder="What it does…"
+                      required
+                    />
+                  </label>
+
+                  <label className="grid gap-1">
+                    <span className="text-xs text-green-200/70">techStack (comma separated)</span>
+                    <input
+                      value={projectDraft.techStack}
+                      onChange={(e) => setProjectDraft((p) => ({ ...p, techStack: e.target.value }))}
+                      className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                      placeholder="React, Node.js, MongoDB"
+                    />
+                  </label>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <label className="grid gap-1">
+                      <span className="text-xs text-green-200/70">imageUrl</span>
+                      <input
+                        value={projectDraft.imageUrl}
+                        onChange={(e) => setProjectDraft((p) => ({ ...p, imageUrl: e.target.value }))}
+                        className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                        placeholder="https://..."
+                      />
+                    </label>
+                    <label className="grid gap-1">
+                      <span className="text-xs text-green-200/70">githubUrl</span>
+                      <input
+                        value={projectDraft.githubUrl}
+                        onChange={(e) => setProjectDraft((p) => ({ ...p, githubUrl: e.target.value }))}
+                        className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                        placeholder="https://github.com/..."
+                      />
+                    </label>
+                    <label className="grid gap-1 md:col-span-2">
+                      <span className="text-xs text-green-200/70">liveUrl</span>
+                      <input
+                        value={projectDraft.liveUrl}
+                        onChange={(e) => setProjectDraft((p) => ({ ...p, liveUrl: e.target.value }))}
+                        className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                        placeholder="https://..."
+                      />
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="focus-neon mt-1 w-fit rounded-md bg-green-500/10 px-4 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    add project
+                  </button>
+                </form>
+              </section>
+            ) : null}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-            <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
-              <div className="mb-3 font-mono text-xs text-green-200/80">skills://list</div>
-              <div className="grid gap-2">
-                {(skills || []).map((s) => (
-                  <div
-                    key={s._id || s.name}
-                    className="flex items-center justify-between gap-3 rounded-md border border-green-500/10 bg-black/30 px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate font-mono text-xs text-green-100">{s.name}</div>
-                      <div className="truncate text-[11px] text-green-200/60">{s.logoUrl}</div>
+            {showSkills ? (
+              <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
+                <div className="mb-3 font-mono text-xs text-green-200/80">skills://list</div>
+                <div className="grid gap-2">
+                  {(skills || []).map((s) => (
+                    <div
+                      key={s._id || s.name}
+                      className="flex items-center justify-between gap-3 rounded-md border border-green-500/10 bg-black/30 px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate font-mono text-xs text-green-100">{s.name}</div>
+                        <div className="truncate text-[11px] text-green-200/60">{s.logoUrl}</div>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          disabled={busy || !s._id}
+                          onClick={() => openSkillEdit(s)}
+                          className="focus-neon rounded-md border border-green-500/20 px-2 py-1 text-[11px] text-green-200/90 hover:border-green-500/40 disabled:opacity-50"
+                          title={!s._id ? 'Missing _id; cannot edit' : 'Edit skill'}
+                        >
+                          edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy || !s._id}
+                          onClick={() => deleteSkill(s)}
+                          className="focus-neon rounded-md border border-red-500/25 px-2 py-1 text-[11px] text-red-200/90 hover:border-red-500/45 disabled:opacity-50"
+                          title={!s._id ? 'Missing _id; cannot delete' : 'Delete skill'}
+                        >
+                          del
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex shrink-0 gap-2">
-                      <button
-                        type="button"
-                        disabled={busy || !s._id}
-                        onClick={() => openSkillEdit(s)}
-                        className="focus-neon rounded-md border border-green-500/20 px-2 py-1 text-[11px] text-green-200/90 hover:border-green-500/40 disabled:opacity-50"
-                        title={!s._id ? 'Missing _id; cannot edit' : 'Edit skill'}
-                      >
-                        edit
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || !s._id}
-                        onClick={() => deleteSkill(s)}
-                        className="focus-neon rounded-md border border-red-500/25 px-2 py-1 text-[11px] text-red-200/90 hover:border-red-500/45 disabled:opacity-50"
-                        title={!s._id ? 'Missing _id; cannot delete' : 'Delete skill'}
-                      >
-                        del
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
-                {!skills?.length ? (
-                  <div className="text-xs text-green-200/50">No skills yet.</div>
-                ) : null}
-              </div>
-            </section>
+                  {!skills?.length ? <div className="text-xs text-green-200/50">No skills yet.</div> : null}
+                </div>
+              </section>
+            ) : null}
 
-            <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
-              <div className="mb-3 font-mono text-xs text-green-200/80">projects://list</div>
-              <div className="grid gap-2">
-                {(projects || []).map((p) => (
-                  <div
-                    key={p._id || p.title}
-                    className="flex items-center justify-between gap-3 rounded-md border border-green-500/10 bg-black/30 px-3 py-2"
-                  >
-                    <div className="min-w-0">
-                      <div className="truncate font-mono text-xs text-green-100">{p.title}</div>
-                      <div className="truncate text-[11px] text-green-200/60">{p.description}</div>
+            {showProjects ? (
+              <section className="rounded-xl border border-green-500/10 bg-black/30 p-4">
+                <div className="mb-3 font-mono text-xs text-green-200/80">projects://list</div>
+                <div className="grid gap-2">
+                  {(projects || []).map((p) => (
+                    <div
+                      key={p._id || p.title}
+                      className="flex items-center justify-between gap-3 rounded-md border border-green-500/10 bg-black/30 px-3 py-2"
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate font-mono text-xs text-green-100">{p.title}</div>
+                        <div className="truncate text-[11px] text-green-200/60">{p.description}</div>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          disabled={busy || !p._id}
+                          onClick={() => openProjectEdit(p)}
+                          className="focus-neon rounded-md border border-green-500/20 px-2 py-1 text-[11px] text-green-200/90 hover:border-green-500/40 disabled:opacity-50"
+                          title={!p._id ? 'Missing _id; cannot edit' : 'Edit project'}
+                        >
+                          edit
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy || !p._id}
+                          onClick={() => deleteProject(p)}
+                          className="focus-neon rounded-md border border-red-500/25 px-2 py-1 text-[11px] text-red-200/90 hover:border-red-500/45 disabled:opacity-50"
+                          title={!p._id ? 'Missing _id; cannot delete' : 'Delete project'}
+                        >
+                          del
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex shrink-0 gap-2">
-                      <button
-                        type="button"
-                        disabled={busy || !p._id}
-                        onClick={() => openProjectEdit(p)}
-                        className="focus-neon rounded-md border border-green-500/20 px-2 py-1 text-[11px] text-green-200/90 hover:border-green-500/40 disabled:opacity-50"
-                        title={!p._id ? 'Missing _id; cannot edit' : 'Edit project'}
-                      >
-                        edit
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || !p._id}
-                        onClick={() => deleteProject(p)}
-                        className="focus-neon rounded-md border border-red-500/25 px-2 py-1 text-[11px] text-red-200/90 hover:border-red-500/45 disabled:opacity-50"
-                        title={!p._id ? 'Missing _id; cannot delete' : 'Delete project'}
-                      >
-                        del
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
 
-                {!projects?.length ? (
-                  <div className="text-xs text-green-200/50">No projects yet.</div>
-                ) : null}
-              </div>
-            </section>
+                  {!projects?.length ? <div className="text-xs text-green-200/50">No projects yet.</div> : null}
+                </div>
+              </section>
+            ) : null}
           </div>
         </div>
       </div>
 
-      <Modal open={!!editingSkill} title="Edit skill" onClose={() => setEditingSkill(null)}>
-        <div className="grid gap-3">
-          <label className="grid gap-1">
-            <span className="text-xs text-green-200/70">name</span>
-            <input
-              value={skillEdit.name}
-              onChange={(e) => setSkillEdit((s) => ({ ...s, name: e.target.value }))}
-              className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-            />
-          </label>
-          <label className="grid gap-1">
-            <span className="text-xs text-green-200/70">logoUrl</span>
-            <input
-              value={skillEdit.logoUrl}
-              onChange={(e) => setSkillEdit((s) => ({ ...s, logoUrl: e.target.value }))}
-              className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-            />
-          </label>
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              className="focus-neon rounded-md border border-green-500/20 px-3 py-2 text-sm text-green-200/90 hover:border-green-500/40"
-              onClick={() => setEditingSkill(null)}
-              disabled={busy}
-            >
-              cancel
-            </button>
-            <button
-              type="button"
-              className="focus-neon rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={saveSkillEdit}
-              disabled={busy}
-            >
-              save
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal open={!!editingProject} title="Edit project" onClose={() => setEditingProject(null)}>
-        <div className="grid gap-3">
-          <label className="grid gap-1">
-            <span className="text-xs text-green-200/70">title</span>
-            <input
-              value={projectEdit.title}
-              onChange={(e) => setProjectEdit((p) => ({ ...p, title: e.target.value }))}
-              className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-            />
-          </label>
-
-          <label className="grid gap-1">
-            <span className="text-xs text-green-200/70">description</span>
-            <textarea
-              value={projectEdit.description}
-              onChange={(e) => setProjectEdit((p) => ({ ...p, description: e.target.value }))}
-              className="focus-neon min-h-24 rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-            />
-          </label>
-
-          <label className="grid gap-1">
-            <span className="text-xs text-green-200/70">techStack (comma separated)</span>
-            <input
-              value={projectEdit.techStack}
-              onChange={(e) => setProjectEdit((p) => ({ ...p, techStack: e.target.value }))}
-              className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-            />
-          </label>
-
-          <div className="grid gap-3 md:grid-cols-2">
+      {showSkills ? (
+        <Modal open={!!editingSkill} title="Edit skill" onClose={() => setEditingSkill(null)}>
+          <div className="grid gap-3">
             <label className="grid gap-1">
-              <span className="text-xs text-green-200/70">imageUrl</span>
+              <span className="text-xs text-green-200/70">name</span>
               <input
-                value={projectEdit.imageUrl}
-                onChange={(e) => setProjectEdit((p) => ({ ...p, imageUrl: e.target.value }))}
+                value={skillEdit.name}
+                onChange={(e) => setSkillEdit((s) => ({ ...s, name: e.target.value }))}
                 className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
               />
             </label>
             <label className="grid gap-1">
-              <span className="text-xs text-green-200/70">githubUrl</span>
+              <span className="text-xs text-green-200/70">logoUrl</span>
               <input
-                value={projectEdit.githubUrl}
-                onChange={(e) => setProjectEdit((p) => ({ ...p, githubUrl: e.target.value }))}
+                value={skillEdit.logoUrl}
+                onChange={(e) => setSkillEdit((s) => ({ ...s, logoUrl: e.target.value }))}
                 className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
               />
             </label>
-            <label className="grid gap-1 md:col-span-2">
-              <span className="text-xs text-green-200/70">liveUrl</span>
-              <input
-                value={projectEdit.liveUrl}
-                onChange={(e) => setProjectEdit((p) => ({ ...p, liveUrl: e.target.value }))}
-                className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
-              />
-            </label>
-          </div>
 
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              className="focus-neon rounded-md border border-green-500/20 px-3 py-2 text-sm text-green-200/90 hover:border-green-500/40"
-              onClick={() => setEditingProject(null)}
-              disabled={busy}
-            >
-              cancel
-            </button>
-            <button
-              type="button"
-              className="focus-neon rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={saveProjectEdit}
-              disabled={busy}
-            >
-              save
-            </button>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="focus-neon rounded-md border border-green-500/20 px-3 py-2 text-sm text-green-200/90 hover:border-green-500/40"
+                onClick={() => setEditingSkill(null)}
+                disabled={busy}
+              >
+                cancel
+              </button>
+              <button
+                type="button"
+                className="focus-neon rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={saveSkillEdit}
+                disabled={busy}
+              >
+                save
+              </button>
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      ) : null}
+
+      {showProjects ? (
+        <Modal open={!!editingProject} title="Edit project" onClose={() => setEditingProject(null)}>
+          <div className="grid gap-3">
+            <label className="grid gap-1">
+              <span className="text-xs text-green-200/70">title</span>
+              <input
+                value={projectEdit.title}
+                onChange={(e) => setProjectEdit((p) => ({ ...p, title: e.target.value }))}
+                className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+              />
+            </label>
+
+            <label className="grid gap-1">
+              <span className="text-xs text-green-200/70">description</span>
+              <textarea
+                value={projectEdit.description}
+                onChange={(e) => setProjectEdit((p) => ({ ...p, description: e.target.value }))}
+                className="focus-neon min-h-24 rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+              />
+            </label>
+
+            <label className="grid gap-1">
+              <span className="text-xs text-green-200/70">techStack (comma separated)</span>
+              <input
+                value={projectEdit.techStack}
+                onChange={(e) => setProjectEdit((p) => ({ ...p, techStack: e.target.value }))}
+                className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+              />
+            </label>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="grid gap-1">
+                <span className="text-xs text-green-200/70">imageUrl</span>
+                <input
+                  value={projectEdit.imageUrl}
+                  onChange={(e) => setProjectEdit((p) => ({ ...p, imageUrl: e.target.value }))}
+                  className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                />
+              </label>
+              <label className="grid gap-1">
+                <span className="text-xs text-green-200/70">githubUrl</span>
+                <input
+                  value={projectEdit.githubUrl}
+                  onChange={(e) => setProjectEdit((p) => ({ ...p, githubUrl: e.target.value }))}
+                  className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                />
+              </label>
+              <label className="grid gap-1 md:col-span-2">
+                <span className="text-xs text-green-200/70">liveUrl</span>
+                <input
+                  value={projectEdit.liveUrl}
+                  onChange={(e) => setProjectEdit((p) => ({ ...p, liveUrl: e.target.value }))}
+                  className="focus-neon rounded-md border border-green-500/15 bg-black/50 px-3 py-2 text-sm text-green-100"
+                />
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="focus-neon rounded-md border border-green-500/20 px-3 py-2 text-sm text-green-200/90 hover:border-green-500/40"
+                onClick={() => setEditingProject(null)}
+                disabled={busy}
+              >
+                cancel
+              </button>
+              <button
+                type="button"
+                className="focus-neon rounded-md bg-green-500/10 px-3 py-2 text-sm text-green-100 ring-1 ring-green-500/20 hover:bg-green-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={saveProjectEdit}
+                disabled={busy}
+              >
+                save
+              </button>
+            </div>
+          </div>
+        </Modal>
+      ) : null}
     </div>
   );
 }

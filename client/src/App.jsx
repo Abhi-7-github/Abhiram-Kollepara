@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Projects from './pages/Projects';
 import Welcome from './pages/Welcome';
 import Admin from './pages/Admin';
+import AdminSkills from './pages/AdminSkills';
+import AdminProjects from './pages/AdminProjects';
 
 export default function App() {
   const location = useLocation();
@@ -15,6 +17,8 @@ export default function App() {
         <Route path="/portfolio" element={<Home />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/skills" element={<AdminSkills />} />
+        <Route path="/admin/projects" element={<AdminProjects />} />
       </Routes>
     </AnimatePresence>
   );
