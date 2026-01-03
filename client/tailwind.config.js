@@ -3,6 +3,9 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
+      colors: {
+        neon: '#4AFF4A'
+      },
       keyframes: {
         flicker: {
           '0%, 19%, 22%, 62%, 64%, 70%, 100%': { opacity: '1' },

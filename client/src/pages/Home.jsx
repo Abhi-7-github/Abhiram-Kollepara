@@ -198,20 +198,11 @@ export default function Home() {
 
             {skills.map((skill) => (
               <Reveal key={skill._id || skill.name}>
-                <div className="group relative rounded-2xl p-[3px]">
-                  <div className="absolute inset-0 rounded-2xl bg-black" />
-                  <div className="absolute inset-0 rounded-2xl bg-green-500/20 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                  <div className="relative rounded-[calc(theme(borderRadius.2xl)-3px)] bg-black/40 p-5 transition duration-200 hover:bg-transparent">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={skill.logoUrl}
-                        alt={skill.name}
-                        loading="lazy"
-                        className="h-10 w-10 rounded-lg bg-black/60 p-1"
-                      />
-                      <div className="min-w-0">
-                        <div className="truncate font-mono text-sm text-green-100">{skill.name}</div>
-                      </div>
+                <div className="rounded-2xl border border-green-500/15 p-5 transition duration-200 hover:border-neon hover:ring-1 hover:ring-neon/30">
+                  <div className="flex items-center gap-3">
+                    <img src={skill.logoUrl} alt={skill.name} loading="lazy" className="h-10 w-10 rounded-lg" />
+                    <div className="min-w-0">
+                      <div className="truncate font-mono text-sm text-green-100">{skill.name}</div>
                     </div>
                   </div>
                 </div>
